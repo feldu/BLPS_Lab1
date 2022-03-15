@@ -1,9 +1,9 @@
-package blps.lab1.service;
+package blps.labs.service;
 
 
-import blps.lab1.entity.Role;
-import blps.lab1.exception.DataNotFoundException;
-import blps.lab1.repository.RoleRepository;
+import blps.labs.entity.Role;
+import blps.labs.exception.DataNotFoundException;
+import blps.labs.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

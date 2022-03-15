@@ -1,6 +1,7 @@
-package blps.lab1.entity;
+package blps.labs.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -37,6 +38,7 @@ public class User implements UserDetails {
 
     @Column
     @NotEmpty
+    @JsonIgnore
     @Size(min = 4)
     private String password;
 

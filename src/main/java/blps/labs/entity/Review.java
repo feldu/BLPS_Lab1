@@ -1,6 +1,6 @@
-package blps.lab1.entity;
+package blps.labs.entity;
 
-import blps.lab1.dto.ReviewDTO;
+import blps.labs.dto.ReviewDTO;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;

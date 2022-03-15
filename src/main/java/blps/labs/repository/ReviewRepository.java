@@ -1,6 +1,6 @@
-package blps.lab1.repository;
+package blps.labs.repository;
 
-import blps.lab1.entity.Review;
+import blps.labs.entity.Review;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

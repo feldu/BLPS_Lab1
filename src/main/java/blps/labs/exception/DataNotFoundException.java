@@ -1,4 +1,4 @@
-package blps.lab1.exception;
+package blps.labs.exception;
 
 public class DataNotFoundException extends RuntimeException {
     public DataNotFoundException(String message) {

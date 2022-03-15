@@ -1,19 +1,15 @@
-package blps.lab1.service;
+package blps.labs.service;
 
-import blps.lab1.entity.User;
-import blps.lab1.repository.UserRepository;
+import blps.labs.entity.User;
+import blps.labs.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
-
 @Slf4j
 @Service
-public class UserService implements UserDetailsService {
+public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -21,14 +17,6 @@ public class UserService implements UserDetailsService {
     public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-    }
-
-    @Override
-    @Transactional
-    public User loadUserByUsername(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found in DB"));
-        log.debug("User {} found in DB", username);
-        return user;
     }
 
     public boolean saveUser(User user) {

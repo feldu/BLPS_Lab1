@@ -1,22 +1,58 @@
-package blps.lab1.config;
+package blps.labs.config;
 
-import blps.lab1.entity.User;
+import blps.labs.security.jwt.AuthEntryPointJwt;
+import blps.labs.security.jwt.JwtAuthenticationFilter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Slf4j
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    private final UserDetailsService userDetailsService;
+    private final AuthEntryPointJwt unauthorizedEntryPoint;
+
+    @Autowired
+    public WebSecurityConfig(AuthEntryPointJwt unauthorizedHandler, UserDetailsService userDetailsService) {
+        this.unauthorizedEntryPoint = unauthorizedHandler;
+        this.userDetailsService = userDetailsService;
+    }
+
+    @Override
     @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+
+    @Bean
+    public BCryptPasswordEncoder encoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public JwtAuthenticationFilter authenticationTokenFilterBean() {
+        return new JwtAuthenticationFilter();
+    }
+
+
+    @Override
+    public void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(userDetailsService).passwordEncoder(encoder());
     }
 
     @Override
@@ -46,29 +82,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 //Все остальные страницы требуют аутентификации
                 .anyRequest().authenticated()
                 .and()
-                //Настройка для входа в систему
-                .formLogin()
-                .loginPage("/auth/signin")
-                .loginProcessingUrl("/auth/signin")
-                .successHandler((request, response, authentication) -> {
-                    User user = (User) authentication.getPrincipal();
-                    String roleName = "NO ROLES";
-                    String redirectURL = request.getContextPath();
-                    if (user.hasRole("ROLE_MODERATOR")) {
-                        roleName = "MODERATOR";
-                        redirectURL = "/moderator";
-                    } else if (user.hasRole("ROLE_USER")) {
-                        roleName = "USER";
-                        redirectURL = "/user";
-                    }
-                    log.debug("user {} has role {}", user, roleName);
-                    response.sendRedirect(redirectURL);
-                })
-                .permitAll()
-                .and()
-                .logout()
-                .logoutUrl("/auth/logout")
-                .logoutSuccessUrl("/auth/signin")
-                .permitAll();
+                .exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint).and()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+        http.addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
     }
 }

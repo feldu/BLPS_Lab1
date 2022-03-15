@@ -1,8 +1,8 @@
-package blps.lab1.controller;
+package blps.labs.controller;
 
-import blps.lab1.dto.ReviewDTO;
-import blps.lab1.entity.Review;
-import blps.lab1.service.ReviewService;
+import blps.labs.dto.ReviewDTO;
+import blps.labs.entity.Review;
+import blps.labs.service.ReviewService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
