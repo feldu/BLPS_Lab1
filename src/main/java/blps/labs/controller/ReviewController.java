@@ -1,6 +1,7 @@
 package blps.labs.controller;
 
 import blps.labs.dto.ReviewDTO;
+import blps.labs.entity.Car;
 import blps.labs.entity.Review;
 import blps.labs.service.ReviewService;
 import lombok.extern.slf4j.Slf4j;
@@ -27,23 +28,19 @@ public class ReviewController {
     @PostMapping("/")
     public ResponseEntity<String> addReview(@RequestBody ReviewDTO reviewDTO) {
         Review review = new Review(reviewDTO);
+        Car car = new Car(reviewDTO);
+        review.setCar(car);
         reviewService.saveReview(review);
         return new ResponseEntity<>("Отзыв сохранен", HttpStatus.OK);
     }
 
     @PatchMapping("/approval/{id}")
     public ResponseEntity<String> changeApproval(@PathVariable(name = "id") Long id,
-                                                 @RequestBody Map<String, Boolean> payload) {
+                                                 @RequestBody Map<String, Boolean> payload) throws Exception {
         Boolean approved = payload.get("approved");
         if (approved == null)
             return new ResponseEntity<>("Не указано значение approved", HttpStatus.BAD_REQUEST);
-        Review review = reviewService.findReviewById(id);
-        if (review == null)
-            return new ResponseEntity<>("Отзыв с указанным id не существует", HttpStatus.BAD_REQUEST);
-        if (review.isApproved() == approved)
-            return new ResponseEntity<>("Отзыв с указанным id уже имеет значение " + approved, HttpStatus.BAD_REQUEST);
-        review.setApproved(approved);
-        reviewService.saveReview(review);
+        reviewService.changeApproval(id, approved);
         return new ResponseEntity<>("Подтверждение отзыва изменено", HttpStatus.OK);
     }
 

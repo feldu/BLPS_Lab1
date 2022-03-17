@@ -1,5 +1,6 @@
 package blps.labs.service;
 
+import blps.labs.entity.Car;
 import blps.labs.entity.Review;
 import blps.labs.exception.DataNotFoundException;
 import blps.labs.repository.ReviewRepository;
@@ -13,15 +14,23 @@ import java.util.List;
 @Service
 public class ReviewService {
     private final ReviewRepository reviewRepository;
+    private final CarService carService;
 
     @Autowired
-    public ReviewService(ReviewRepository reviewRepository) {
+    public ReviewService(ReviewRepository reviewRepository, CarService carService) {
         this.reviewRepository = reviewRepository;
+        this.carService = carService;
     }
 
     public void saveReview(Review review) {
-        reviewRepository.save(review);
-        log.debug("{} review by {} on saved in DB", review.getCarModel(), review.getAuthorName());
+        try {
+            Car carFromDB = carService.findCar(review.getCar());
+            review.setCar(carFromDB);
+        } catch (DataNotFoundException ignored) {
+        } finally {
+            reviewRepository.save(review);
+        }
+        log.debug("{} review by {} on saved in DB", review.getCar().getCarModel(), review.getAuthorName());
     }
 
     public Review findReviewById(Long id) {
@@ -39,5 +48,13 @@ public class ReviewService {
 
     public List<Review> findAllByAuthorName(String authorName) {
         return reviewRepository.findAllByAuthorName(authorName);
+    }
+
+    public void changeApproval(Long id, Boolean approved) {
+        Review review = findReviewById(id);
+        if (review.isApproved() == approved)
+            return;
+        review.setApproved(approved);
+        saveReview(review);
     }
 }
