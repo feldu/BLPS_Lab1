@@ -31,34 +31,39 @@ public class ReviewController {
         Car car = new Car(reviewDTO);
         review.setCar(car);
         reviewService.saveReview(review);
+        log.info("Review by {} added successfully.", review.getAuthorName());
         return new ResponseEntity<>("Отзыв сохранен", HttpStatus.OK);
     }
 
     @PatchMapping("/approval/{id}")
     public ResponseEntity<String> changeApproval(@PathVariable(name = "id") Long id,
-                                                 @RequestBody Map<String, Boolean> payload) throws Exception {
+                                                 @RequestBody Map<String, Boolean> payload) {
         Boolean approved = payload.get("approved");
         if (approved == null)
             return new ResponseEntity<>("Не указано значение approved", HttpStatus.BAD_REQUEST);
         reviewService.changeApproval(id, approved);
+        log.info("Review with id {} changed approval.", id);
         return new ResponseEntity<>("Подтверждение отзыва изменено", HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteReview(@PathVariable(name = "id") Long id) {
         reviewService.deleteReviewById(id);
+        log.info("Review with id {} deleted.", id);
         return new ResponseEntity<>("Отзыв удален", HttpStatus.OK);
     }
 
     @GetMapping("/approved/{approved}")
     public ResponseEntity<List<Review>> getReviewByApproval(@PathVariable Boolean approved) {
         List<Review> reviews = reviewService.findAllByApproved(approved);
+        log.info("Getting list of reviews with {} approval.", approved);
         return new ResponseEntity<>(reviews, HttpStatus.OK);
     }
 
     @GetMapping("/authorName/{authorName}")
     public ResponseEntity<List<Review>> getReviewByAuthorName(@PathVariable String authorName) {
         List<Review> reviews = reviewService.findAllByAuthorName(authorName);
+        log.info("Getting list of reviews by {}.", authorName);
         return new ResponseEntity<>(reviews, HttpStatus.OK);
     }
 }

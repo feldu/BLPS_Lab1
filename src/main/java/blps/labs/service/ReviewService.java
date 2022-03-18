@@ -30,7 +30,7 @@ public class ReviewService {
         } finally {
             reviewRepository.save(review);
         }
-        log.debug("{} review by {} on saved in DB", review.getCar().getCarModel(), review.getAuthorName());
+        log.debug("{} review by {} saved in DB", review.getCar().getCarModel(), review.getAuthorName());
     }
 
     public Review findReviewById(Long id) {
@@ -56,5 +56,6 @@ public class ReviewService {
             return;
         review.setApproved(approved);
         saveReview(review);
+        log.debug("{} review with changed approval {} saved in DB", review.getCar().getCarModel(), review.getAuthorName());
     }
 }
