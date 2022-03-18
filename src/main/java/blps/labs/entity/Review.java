@@ -22,7 +22,7 @@ public class Review {
     private String authorName;
 
     @NotNull
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "car_id", referencedColumnName = "id")
     private Car car;
 
