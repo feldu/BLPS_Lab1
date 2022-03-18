@@ -9,10 +9,11 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>blps</groupId>
-    <artifactId>lab1</artifactId>
+    <artifactId>labs</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>BLPS_Lab1</name>
-    <description>BLPS lab 1</description>
+    <packaging>war</packaging>
+    <name>BLPS_Lab</name>
+    <description>Business logic labs</description>
     <properties>
         <java.version>1.8</java.version>
     </properties>
@@ -28,6 +29,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -43,6 +50,11 @@
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
             <version>0.9.1</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -64,6 +76,12 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>2.0.0.Final</version>
+            </plugin>
         </plugins>
+        <finalName>${project.name}</finalName>
     </build>
 </project>
