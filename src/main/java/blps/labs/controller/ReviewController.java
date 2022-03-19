@@ -2,12 +2,15 @@ package blps.labs.controller;
 
 import blps.labs.dto.ReviewDTO;
 import blps.labs.entity.Car;
+import blps.labs.entity.RejectedUserReview;
 import blps.labs.entity.Review;
+import blps.labs.service.RejectedUserReviewService;
 import blps.labs.service.ReviewService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,10 +22,12 @@ import java.util.Map;
 public class ReviewController {
 
     private final ReviewService reviewService;
+    private final RejectedUserReviewService rejectedUserReviewService;
 
     @Autowired
-    public ReviewController(ReviewService reviewService) {
+    public ReviewController(ReviewService reviewService, RejectedUserReviewService rejectedUserReviewService) {
         this.reviewService = reviewService;
+        this.rejectedUserReviewService = rejectedUserReviewService;
     }
 
     @PostMapping("/")
@@ -37,11 +42,12 @@ public class ReviewController {
 
     @PatchMapping("/approval/{id}")
     public ResponseEntity<String> changeApproval(@PathVariable(name = "id") Long id,
-                                                 @RequestBody Map<String, Boolean> payload) {
-        Boolean approved = payload.get("approved");
+                                                 @RequestBody Map<String, String> payload) {
+        String approved = payload.get("approved");
+        String message = payload.get("message");
         if (approved == null)
             return new ResponseEntity<>("Не указано значение approved", HttpStatus.BAD_REQUEST);
-        reviewService.changeApproval(id, approved);
+        reviewService.changeApproval(id, Boolean.valueOf(approved), message);
         log.info("Review with id {} changed approval.", id);
         return new ResponseEntity<>("Подтверждение отзыва изменено", HttpStatus.OK);
     }
@@ -60,10 +66,19 @@ public class ReviewController {
         return new ResponseEntity<>(reviews, HttpStatus.OK);
     }
 
-    @GetMapping("/authorName/{authorName}")
-    public ResponseEntity<List<Review>> getReviewByAuthorName(@PathVariable String authorName) {
+    @GetMapping("/authorName")
+    public ResponseEntity<List<Review>> getReviewByAuthorName(Authentication authentication) {
+        String authorName = authentication.getName();
         List<Review> reviews = reviewService.findAllByAuthorName(authorName);
         log.info("Getting list of reviews by {}.", authorName);
         return new ResponseEntity<>(reviews, HttpStatus.OK);
+    }
+
+    @GetMapping("/rejected")
+    public ResponseEntity<List<RejectedUserReview>> getRejectedUserReview(Authentication authentication) {
+        String username = authentication.getName();
+        List<RejectedUserReview> rejectedReviews = rejectedUserReviewService.findAllByUsername(username);
+        log.info("Getting list of rejected reviews by {}.", username);
+        return new ResponseEntity<>(rejectedReviews, HttpStatus.OK);
     }
 }
