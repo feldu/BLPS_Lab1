@@ -4,9 +4,8 @@
 *.iml
 *.ipr
 
-target
-/META-INF
-src/main/resources/
+*/target
 
+*/src/main/resources/
 
 
