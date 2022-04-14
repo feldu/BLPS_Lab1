@@ -4,6 +4,7 @@ import blps.labs.dto.ReviewDTO;
 import blps.labs.entity.Car;
 import blps.labs.entity.RejectedUserReview;
 import blps.labs.entity.Review;
+import blps.labs.message.service.MessageService;
 import blps.labs.service.RejectedUserReviewService;
 import blps.labs.service.ReviewService;
 import lombok.extern.slf4j.Slf4j;
@@ -23,11 +24,13 @@ public class ReviewController {
 
     private final ReviewService reviewService;
     private final RejectedUserReviewService rejectedUserReviewService;
+    private final MessageService messageService;
 
     @Autowired
-    public ReviewController(ReviewService reviewService, RejectedUserReviewService rejectedUserReviewService) {
+    public ReviewController(ReviewService reviewService, RejectedUserReviewService rejectedUserReviewService, MessageService messageService) {
         this.reviewService = reviewService;
         this.rejectedUserReviewService = rejectedUserReviewService;
+        this.messageService = messageService;
     }
 
     @PostMapping("/")
@@ -36,6 +39,7 @@ public class ReviewController {
         Car car = new Car(reviewDTO);
         review.setCar(car);
         reviewService.saveReview(review);
+        messageService.sendMessageWhenReviewAdd(review);
         log.info("Review by {} added successfully.", review.getAuthorName());
         return new ResponseEntity<>("Отзыв сохранен", HttpStatus.OK);
     }
@@ -48,6 +52,9 @@ public class ReviewController {
         if (approved == null)
             return new ResponseEntity<>("Не указано значение approved", HttpStatus.BAD_REQUEST);
         reviewService.changeApproval(id, Boolean.valueOf(approved), message);
+        messageService.sendMessageWhenReviewChecked(id, message, Boolean.valueOf(approved));
+        if (!Boolean.parseBoolean(approved))
+            reviewService.deleteReviewById(id);
         log.info("Review with id {} changed approval.", id);
         return new ResponseEntity<>("Подтверждение отзыва изменено", HttpStatus.OK);
     }
