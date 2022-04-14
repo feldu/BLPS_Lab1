@@ -3,6 +3,7 @@ package blps.labs.message.jms.config;
 import com.rabbitmq.jms.admin.RMQConnectionFactory;
 import com.rabbitmq.jms.admin.RMQDestination;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.EnableJms;
@@ -14,15 +15,25 @@ import javax.jms.ConnectionFactory;
 @Configuration
 @EnableJms
 public class JmsConfig {
+    @Value("${rabbitmq.username}")
+    private String username;
+    @Value("${rabbitmq.password}")
+    private String password;
+    @Value("${rabbitmq.virtual-host}")
+    private String virtualHost;
+    @Value("${rabbitmq.host}")
+    private String host;
+    @Value("${rabbitmq.port}")
+    private int port;
 
     @Bean
     public ConnectionFactory jmsConnectionFactory() {
         RMQConnectionFactory connectionFactory = new RMQConnectionFactory();
-        connectionFactory.setUsername("guest");
-        connectionFactory.setPassword("guest");
-        connectionFactory.setVirtualHost("/");
-        connectionFactory.setHost("localhost");
-        connectionFactory.setPort(5672);
+        connectionFactory.setUsername(username);
+        connectionFactory.setPassword(password);
+        connectionFactory.setVirtualHost(virtualHost);
+        connectionFactory.setHost(host);
+        connectionFactory.setPort(port);
         return connectionFactory;
     }
 
