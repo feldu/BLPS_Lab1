@@ -21,7 +21,6 @@ import java.util.List;
 @Service
 public class ReviewService {
 
-    private final PlatformTransactionManager transactionManager;
     private final TransactionTemplate transactionTemplate;
     private final ReviewRepository reviewRepository;
     private final CarService carService;
@@ -32,7 +31,6 @@ public class ReviewService {
     public ReviewService(ReviewRepository reviewRepository, CarService carService, PlatformTransactionManager transactionManager, UserService userService, RejectedUserReviewService rejectedUserReviewService) {
         this.reviewRepository = reviewRepository;
         this.carService = carService;
-        this.transactionManager = transactionManager;
         this.userService = userService;
         this.rejectedUserReviewService = rejectedUserReviewService;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
@@ -78,6 +76,10 @@ public class ReviewService {
                 if (review.isApproved() == approved && approved)
                     return;
                 review.setApproved(approved);
+                if (review.isApproved()) {
+                    saveReview(review);
+                    return;
+                }
                 if (!approved && message != null) {
                     try {
                         User author = userService.findUserByUsername(review.getAuthorName());
@@ -89,7 +91,7 @@ public class ReviewService {
                         log.warn("Review belongs to not auth user: alert for user not created");
                     }
                 }
-                saveReview(review);
+                reviewRepository.deleteById(review.getId());
                 log.debug("{} review with changed approval {} saved in DB", review.getCar().getCarModel(), review.getAuthorName());
             }
         });

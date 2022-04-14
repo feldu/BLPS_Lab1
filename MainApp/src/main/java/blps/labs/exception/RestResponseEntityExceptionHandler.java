@@ -5,6 +5,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,22 +19,25 @@ import javax.validation.ConstraintViolationException;
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {DataNotFoundException.class, EmptyResultDataAccessException.class, ConstraintViolationException.class})
-    protected ResponseEntity<Object> handleDataNotFound(
-            RuntimeException e, WebRequest request) {
+    protected ResponseEntity<Object> handleDataNotFound(RuntimeException e, WebRequest request) {
         log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage());
         return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
     @ExceptionHandler(value = UsernameNotFoundException.class)
-    protected ResponseEntity<Object> handleUsernameNotFound(
-            RuntimeException e, WebRequest request) {
+    protected ResponseEntity<Object> handleUsernameNotFound(RuntimeException e, WebRequest request) {
+        log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage());
+        return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(value = BadCredentialsException.class)
+    protected ResponseEntity<Object> handleSignIn(RuntimeException e, WebRequest request) {
         log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage());
         return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
     @ExceptionHandler(value = Exception.class)
-    protected ResponseEntity<Object> handleServer(
-            RuntimeException e, WebRequest request) {
+    protected ResponseEntity<Object> handleServer(RuntimeException e, WebRequest request) {
         log.error("{}: {}", e.getClass().getSimpleName(), e.getMessage());
         return handleExceptionInternal(e, "Unknown error occurred", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
