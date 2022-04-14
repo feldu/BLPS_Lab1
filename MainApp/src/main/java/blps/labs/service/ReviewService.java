@@ -3,12 +3,10 @@ package blps.labs.service;
 import blps.labs.entity.Car;
 import blps.labs.entity.RejectedUserReview;
 import blps.labs.entity.Review;
-import blps.labs.entity.User;
 import blps.labs.exception.DataNotFoundException;
 import blps.labs.repository.ReviewRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -24,14 +22,12 @@ public class ReviewService {
     private final TransactionTemplate transactionTemplate;
     private final ReviewRepository reviewRepository;
     private final CarService carService;
-    private final UserService userService;
     private final RejectedUserReviewService rejectedUserReviewService;
 
     @Autowired
-    public ReviewService(ReviewRepository reviewRepository, CarService carService, PlatformTransactionManager transactionManager, UserService userService, RejectedUserReviewService rejectedUserReviewService) {
+    public ReviewService(ReviewRepository reviewRepository, CarService carService, PlatformTransactionManager transactionManager, RejectedUserReviewService rejectedUserReviewService) {
         this.reviewRepository = reviewRepository;
         this.carService = carService;
-        this.userService = userService;
         this.rejectedUserReviewService = rejectedUserReviewService;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
     }
@@ -62,6 +58,7 @@ public class ReviewService {
 
     public void deleteReviewById(Long id) {
         reviewRepository.deleteById(id);
+        log.info("Review {} deleted", id);
     }
 
     public List<Review> findAllByAuthorName(String authorName) {
@@ -76,22 +73,12 @@ public class ReviewService {
                 if (review.isApproved() == approved && approved)
                     return;
                 review.setApproved(approved);
-                if (review.isApproved()) {
-                    saveReview(review);
-                    return;
-                }
                 if (!approved && message != null) {
-                    try {
-                        User author = userService.findUserByUsername(review.getAuthorName());
-                        RejectedUserReview rejectedReview = new RejectedUserReview();
-                        rejectedReview.setUser(author);
-                        rejectedReview.setMessage(message);
+                    RejectedUserReview rejectedReview = rejectedUserReviewService.createRejectedReview(review, message);
+                    if (rejectedReview != null)
                         rejectedUserReviewService.save(rejectedReview);
-                    } catch (UsernameNotFoundException ignored) {
-                        log.warn("Review belongs to not auth user: alert for user not created");
-                    }
                 }
-                reviewRepository.deleteById(review.getId());
+                saveReview(review);
                 log.debug("{} review with changed approval {} saved in DB", review.getCar().getCarModel(), review.getAuthorName());
             }
         });
