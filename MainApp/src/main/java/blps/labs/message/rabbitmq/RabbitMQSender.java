@@ -2,14 +2,12 @@ package blps.labs.message.rabbitmq;
 
 import blps.labs.message.model.AddReviewMessage;
 import blps.labs.message.model.CheckReviewMessage;
-import blps.labs.message.model.SpamMessageUnit;
+import blps.labs.message.model.SpamMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Slf4j
 @Service
@@ -39,7 +37,7 @@ public class RabbitMQSender {
         log.info("Message: {} sent", message);
     }
 
-    public void send(List<SpamMessageUnit> message) {
+    public void send(SpamMessage message) {
         rabbitTemplate.convertAndSend(appExchange.getName(), sendSpamRoutingKey, message);
         log.info("Message: {} sent", message);
     }

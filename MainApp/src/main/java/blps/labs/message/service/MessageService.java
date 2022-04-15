@@ -4,6 +4,7 @@ import blps.labs.entity.Review;
 import blps.labs.entity.User;
 import blps.labs.message.model.AddReviewMessage;
 import blps.labs.message.model.CheckReviewMessage;
+import blps.labs.message.model.SpamMessage;
 import blps.labs.message.model.SpamMessageUnit;
 import blps.labs.message.rabbitmq.RabbitMQSender;
 import blps.labs.service.ReviewService;
@@ -65,7 +66,9 @@ public class MessageService {
             List<Review> approvedReviews = reviewService.findAllByApproved(true);
             List<Review> newestReviews = approvedReviews.stream().sorted((r1, r2) -> (int) -(r2.getId() - r1.getId())).skip(approvedReviews.size() - 5).collect(Collectors.toList());
             List<SpamMessageUnit> spam = newestReviews.stream().map(r -> new SpamMessageUnit(r.getId(), r.getAuthorName(), r.getCar().getCarModel())).collect(Collectors.toList());
-            rabbitMQSender.send(spam);
+            List<String> emails = userService.findAllSpamSubscribers().stream().map(User::getEmail).collect(Collectors.toList());
+
+            rabbitMQSender.send(new SpamMessage(emails, spam));
         } catch (Exception ignore) {
             log.error("Spam send error");
         }
