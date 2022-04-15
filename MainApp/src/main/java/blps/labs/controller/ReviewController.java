@@ -35,6 +35,7 @@ public class ReviewController {
 
     @PostMapping("/")
     public ResponseEntity<String> addReview(@RequestBody ReviewDTO reviewDTO) {
+        log.info("Request to add new review");
         Review review = new Review(reviewDTO);
         Car car = new Car(reviewDTO);
         review.setCar(car);
@@ -47,6 +48,7 @@ public class ReviewController {
     @PatchMapping("/approval/{id}")
     public ResponseEntity<String> changeApproval(@PathVariable(name = "id") Long id,
                                                  @RequestBody Map<String, String> payload) {
+        log.info("Request to change review {} approval", id);
         String approved = payload.get("approved");
         String message = payload.get("message");
         if (approved == null)
@@ -55,7 +57,7 @@ public class ReviewController {
         messageService.sendMessageWhenReviewChecked(id, message, Boolean.valueOf(approved));
         if (!Boolean.parseBoolean(approved))
             reviewService.deleteReviewById(id);
-        log.info("Review with id {} changed approval.", id);
+        log.info("Review with id {} handled.", id);
         return new ResponseEntity<>("Подтверждение отзыва изменено", HttpStatus.OK);
     }
 
