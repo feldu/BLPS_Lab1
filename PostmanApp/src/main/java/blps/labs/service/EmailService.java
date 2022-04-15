@@ -2,6 +2,8 @@ package blps.labs.service;
 
 import blps.labs.message.model.AddReviewMessage;
 import blps.labs.message.model.CheckReviewMessage;
+import blps.labs.message.model.SpamMessage;
+import blps.labs.message.model.SpamMessageUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -50,6 +52,30 @@ public class EmailService {
             msg.setText(text);
             javaMailSender.send(msg);
             log.info("Message to {} sent.", reviewMessage.getEmail());
+        } catch (Exception ignored) {
+            log.error("Sending message error");
+        }
+    }
+
+    public void sendEmail(SpamMessage spamMessage) {
+        try {
+            for (String email : spamMessage.getSubscribersEmails()) {
+                SimpleMailMessage msg = new SimpleMailMessage();
+                msg.setTo(email);
+                msg.setSubject("Отзыв Wrooom.ru-feldme");
+                String firstPart = "Доброго времени суток!\n\nПредставляем пятёрку новейших отзывов с сайта wroom.ru.\n\n";
+                StringBuilder reviews = new StringBuilder();
+                for (SpamMessageUnit messageUnit : spamMessage.getSpam()) {
+                    reviews.append(String.format("Отзыв №%d от автора %s: автомобиль марки %s", messageUnit.getId(), messageUnit.getAuthor(), messageUnit.getCar())).append("\n");
+                }
+                String secondPart = "\nОзнакомиться с этими и многими другими отзывами можно на нашем сайте www.wroom.ru/story\n\n";
+                String footer = "С уважением, команда Wroom.ru-feldme.";
+                String ps = "\n\n\n\n* Для того, чтобы отписаться от рассылки удалите учетную запись";
+                String text = firstPart + reviews + secondPart + footer + ps;
+                msg.setText(text);
+                javaMailSender.send(msg);
+            }
+            log.info("Spam sent to {} users", spamMessage.getSubscribersEmails().size());
         } catch (Exception ignored) {
             log.error("Sending message error");
         }
