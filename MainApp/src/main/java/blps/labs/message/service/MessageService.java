@@ -4,6 +4,7 @@ import blps.labs.entity.Review;
 import blps.labs.entity.User;
 import blps.labs.message.model.AddReviewMessage;
 import blps.labs.message.model.CheckReviewMessage;
+import blps.labs.message.model.SpamMessageUnit;
 import blps.labs.message.rabbitmq.RabbitMQSender;
 import blps.labs.service.ReviewService;
 import blps.labs.service.UserService;
@@ -11,6 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -52,6 +56,18 @@ public class MessageService {
             rabbitMQSender.send(new CheckReviewMessage(review.getId(), user.getEmail(), user.getName(), review.getCar().getCarModel(), approved, message));
         } catch (UsernameNotFoundException ignored) {
             log.warn("Review belongs to not auth user: message is not sent");
+        }
+    }
+
+    public void sendMessageWithTheNewestReviews() {
+        log.info("Send spam to postman");
+        try {
+            List<Review> approvedReviews = reviewService.findAllByApproved(true);
+            List<Review> newestReviews = approvedReviews.stream().sorted((r1, r2) -> (int) -(r2.getId() - r1.getId())).skip(approvedReviews.size() - 5).collect(Collectors.toList());
+            List<SpamMessageUnit> spam = newestReviews.stream().map(r -> new SpamMessageUnit(r.getId(), r.getAuthorName(), r.getCar().getCarModel())).collect(Collectors.toList());
+            rabbitMQSender.send(spam);
+        } catch (Exception ignore) {
+            log.error("Spam send error");
         }
     }
 }

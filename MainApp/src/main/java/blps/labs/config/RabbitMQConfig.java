@@ -18,12 +18,16 @@ public class RabbitMQConfig {
     private String addReviewQueueName;
     @Value("${rabbitmq.check-review-queue}")
     private String checkReviewQueueName;
+    @Value("${rabbitmq.send-spam-queue}")
+    private String sendSpamQueueName;
     @Value("${rabbitmq.app-exchange}")
     private String exchange;
     @Value("${rabbitmq.add-review-routingKey}")
     private String addReviewRoutingKey;
     @Value("${rabbitmq.check-review-routingKey}")
     private String checkReviewRoutingKey;
+    @Value("${rabbitmq.send-spam-routingKey}")
+    private String sendSpamRoutingKey;
 
     @Bean
     DirectExchange appExchange() {
@@ -41,6 +45,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    Queue sendSpamQueue() {
+        return new Queue(sendSpamQueueName);
+    }
+
+    @Bean
     Binding declareBindingAddReview() {
         return BindingBuilder.bind(addReviewQueue()).to(appExchange()).with(addReviewRoutingKey);
     }
@@ -48,6 +57,11 @@ public class RabbitMQConfig {
     @Bean
     Binding declareBindingCheckReview() {
         return BindingBuilder.bind(checkReviewQueue()).to(appExchange()).with(checkReviewRoutingKey);
+    }
+
+    @Bean
+    Binding declareBindingSendSpam() {
+        return BindingBuilder.bind(sendSpamQueue()).to(appExchange()).with(sendSpamRoutingKey);
     }
 
     @Bean
